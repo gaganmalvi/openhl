@@ -1,9 +1,23 @@
+#
+# OpenHL build script for Linux
+#
+
+#!/bin/sh
+
 set -e
 
 ROOTDIR="$(pwd)"
 DISTDIR="$ROOTDIR/dist"
 SRCDIR="$ROOTDIR/src"
 DESTDIR="$ROOTDIR/export"
+
+#
+# Set PLATFORM.
+# Leave empty for keeping BSD defaults
+# Parameters:
+# - linux
+#
+PLATFORM=linux
 
 if [ -z "$PYTHON" ]; then
   PYTHON=python3
@@ -95,6 +109,13 @@ extract_valve()
   cp -r "$SRCDIR/overlays/valve/"* "valve"
 }
 
+linux_changes()
+{
+  # for Linux, the .so names has to be changed from libclient/libserver to client/hl
+  sed -i 's/libclient\.so/client\.so/' export/bin/hl
+  sed -i 's/libserver\.so/hl\.so/' export/bin/hl
+}
+
 prepare_system
 build_hlextract
 build_wiseunpacker
@@ -103,3 +124,10 @@ build_engine
 build_hlsdk
 build_opforsdk
 
+#
+# Adapt HL for Linux changes if the platform building it is Linux.
+# TODO: Add platform check.
+# 
+if [ "PLATFORM" = 'linux' ]; then 
+  linux_changes
+fi
